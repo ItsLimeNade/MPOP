@@ -1,0 +1,79 @@
+const { SlashCommandBuilder, AttachmentBuilder } = require('discord.js')
+const Canvas = require('canvas');
+const User = require('../../Modules/databaseManager')
+const userData = new User()
+
+module.exports = {
+
+    data: new SlashCommandBuilder()
+        .setName('leaderboard')
+        .setDescription("Shows the server's leaderboard!"),
+
+    async execute(interaction) {
+        const leaderboard = await userData.getLeaderboard()
+        const cvs = Canvas.createCanvas(620, 750)
+        const ctx = cvs.getContext('2d')
+
+
+        ctx.fillStyle = "#141414";
+        ctx.fillRect(0, 0, cvs.width, cvs.height)
+        ctx.font = '60px sans-serif';
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText('Leaderboard', 120, 70);
+
+        let [pfps, count] = [[], 1]
+        let reverseLB = leaderboard.reverse()
+
+        leaderboard.forEach(async element => {
+            let user = interaction.guild.members.cache.get(element.userID)
+
+            ctx.font = '25px sans-serif';
+            ctx.fillText(`${user.user.username} | Level: ${element.level} | XP ${element.xp}`, 180, 120 * count + 30)
+            ctx.font = '30px sans-serif';
+            ctx.fillText(`#${count}`, 30, 120 * count + 30);
+            count++
+        })
+
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 20
+        ctx.lineJoin = 'round'
+        ctx.strokeRect(0, 0, cvs.width, cvs.height)
+
+        ctx.beginPath();
+        ctx.arc(125, 140, 40, 0, Math.PI * 2, true);
+        ctx.arc(125, 260, 40, 0, Math.PI * 2, true);
+        ctx.arc(125, 380, 40, 0, Math.PI * 2, true);
+        ctx.arc(125, 500, 40, 0, Math.PI * 2, true);
+        ctx.arc(125, 620, 40, 0, Math.PI * 2, true);
+        ctx.closePath();
+        ctx.clip();
+        try {
+            await pfps.push(interaction.guild.members.cache.get(reverseLB[0].userID).user.displayAvatarURL({ extension: 'jpg' }))
+            let pfp = await Canvas.loadImage(pfps[0])
+            ctx.drawImage(pfp, 85, 100, 80, 80)
+
+            await pfps.push(interaction.guild.members.cache.get(reverseLB[1].userID).user.displayAvatarURL({ extension: 'jpg' }))
+            pfp = await Canvas.loadImage(pfps[1])
+            ctx.drawImage(pfp, 85, 220, 80, 80)
+
+            await pfps.push(interaction.guild.members.cache.get(reverseLB[2].userID).user.displayAvatarURL({ extension: 'jpg' }))
+            pfp = await Canvas.loadImage(pfps[2])
+            ctx.drawImage(pfp, 85, 340, 80, 80)
+
+            await pfps.push(interaction.guild.members.cache.get(reverseLB[3].userID).user.displayAvatarURL({ extension: 'jpg' }))
+            pfp = await Canvas.loadImage(pfps[3])
+            ctx.drawImage(pfp, 85, 460, 80, 80)
+
+            await pfps.push(interaction.guild.members.cache.get(reverseLB[4].userID).user.displayAvatarURL({ extension: 'jpg' }))
+            pfp = await Canvas.loadImage(pfps[4])
+            ctx.drawImage(pfp, 85, 580, 80, 80)
+
+
+            const attachment = new AttachmentBuilder(cvs.toBuffer('image/png'))
+            await interaction.reply({ files: [attachment] })
+        } catch {
+            await interaction.reply("The server needs at least 5 active members to display a leaderboard!")
+        }
+    }
+
+}
