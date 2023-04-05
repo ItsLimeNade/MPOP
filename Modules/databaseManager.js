@@ -14,6 +14,10 @@ class User {
                 userID: userID,
                 guildID: guildID,
                 slashCommandsExecuted: 0,
+                translation: {
+                    tokens: 100,
+                    lastUpdated: Math.floor(Date.now() / 1000)
+                },
                 moderation: {
                     flags: { numberOfFlags: 0, reasons: { reasons: [], time: [] } },
                     warns: { numberOfWarns: 0, reasons: { reasons: [], time: [] } },
@@ -71,11 +75,20 @@ class User {
         await db.push(`${userID}userID-${guildID}guildID.moderation.warns.reasons.time`, Math.floor(Date.now() / 1000))
         return true
     }
-    // async getWarns(userID, guildID) {
-    //     if (!userID) console.error(new Error('UserID arg was not provided.'))
-    //     if (!guildID) console.error(new Error('GuildID arg was not provided.'))
-    //     return await db.get(`${userID}userID-${guildID}guildID.moderation.warns.numberOfWarns`)
-    // }
+
+    async setTranslationWords(userID, guildID, translationWords) {
+        if (!userID) console.error(new Error('UserID arg was not provided.'))
+        if (!guildID) console.error(new Error('GuildID arg was not provided.'))
+        if (!translationWords) console.error(new Error('translationWords arg was not provided.'))
+        return await db.set(`${userID}userID-${guildID}guildID.translation.tokens`, translationWords)
+    }
+
+    async setTranslationLastUpdated(userID, guildID, newTimeStamp) {
+        if (!userID) console.error(new Error('UserID arg was not provided.'))
+        if (!guildID) console.error(new Error('GuildID arg was not provided.'))
+        if (!newTimeStamp) console.error(new Error('newTimeStamp arg was not provided.'))
+        return await db.set(`${userID}userID-${guildID}guildID.translation.lastUpdated`, newTimeStamp)
+    }
 
     async initLeveling(userID, guildID) {
         if (!userID) console.error(new Error('UserID arg was not provided.'))
@@ -133,6 +146,12 @@ class User {
         if (!userID) console.error(new Error('UserID arg was not provided.'))
         if (!guildID) console.error(new Error('GuildID arg was not provided.'))
         return await db.get(`${userID}userID-${guildID}guildID.moderation`)
+    }
+
+    async getTranslation(userID, guildID) {
+        if (!userID) console.error(new Error('UserID arg was not provided.'))
+        if (!guildID) console.error(new Error('GuildID arg was not provided.'))
+        return await db.get(`${userID}userID-${guildID}guildID.translation`)
     }
 
     async getUserData(userID, guildID) {
