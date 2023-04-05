@@ -57,7 +57,7 @@ class User {
         if (!userID) console.error(new Error('UserID arg was not provided.'))
         if (!guildID) console.error(new Error('GuildID arg was not provided.'))
         await db.add(`${userID}userID-${guildID}guildID.moderation.warns.numberOfWarns`, 1)
-        await db.push(`${userID}userID-${guildID}guildID.moderation.warns.reasons.reasons`, `Added Warn: ${reason}`)
+        await db.push(`${userID}userID-${guildID}guildID.moderation.warns.reasons.reasons`, `[+] ${reason}`)
         await db.push(`${userID}userID-${guildID}guildID.moderation.warns.reasons.time`, Math.floor(Date.now() / 1000))
         return true
     }
@@ -67,7 +67,7 @@ class User {
         if (!guildID) console.error(new Error('GuildID arg was not provided.'))
         if (!numberOfWarns) console.error(new Error('numberOfWarns arg was not provided.'))
         await db.sub(`${userID}userID-${guildID}guildID.moderation.warns.numberOfWarns`, numberOfWarns)
-        await db.push(`${userID}userID-${guildID}guildID.moderation.warns.reasons.reasons`, `Removed Warn: ${reason}`)
+        await db.push(`${userID}userID-${guildID}guildID.moderation.warns.reasons.reasons`, `[-] ${reason}`)
         await db.push(`${userID}userID-${guildID}guildID.moderation.warns.reasons.time`, Math.floor(Date.now() / 1000))
         return true
     }

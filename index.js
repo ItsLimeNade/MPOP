@@ -41,6 +41,15 @@ for (const folder of commandFolders) {
 client.on(Events.InteractionCreate, async interaction => {
     if (!interaction.isChatInputCommand()) return;
 
+    await userData.checkData(interaction.user.id, interaction.guild.id)
+    let leveling = await userData.getLeveling(interaction.user.id, interaction.guild.id)
+
+    if (leveling.messagesSent == 0) {
+        await userData.initLeveling(interaction.user.id, interaction.guild.id)
+    }
+    await userData.addXp(interaction.user.id, interaction.guild.id)
+
+
     const command = interaction.client.commands.get(interaction.commandName);
 
     if (!command) {
