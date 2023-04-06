@@ -1,7 +1,7 @@
 const { QuickDB } = require('quick.db')
-console.log("\nLoading Database🔄")
+console.log("\nLoading User Database🔄")
 let db = new QuickDB({ filePath: 'Database/UserDB.sqlite' })
-console.log("Database Loaded!✅\n")
+console.log("User Database Loaded!✅\n")
 
 class User {
 

@@ -1,10 +1,12 @@
-const { Client, Events, GatewayIntentBits, Collection, ConnectionService } = require('discord.js')
+const { Client, Events, GatewayIntentBits, Collection, ConnectionService, EmbedBuilder } = require('discord.js')
 const fs = require('node:fs')
 const path = require('node:path')
 require('dotenv').config()
 
 const User = require('./Modules/databaseManager')
 const userData = new User()
+const Server = require('./Modules/serverSettings')
+const serverSettings = new Server()
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildPresences] })
 
@@ -77,6 +79,41 @@ client.on(Events.MessageCreate, async message => {
             await userData.initLeveling(message.author.id, message.guild.id)
         }
         await userData.addXp(message.author.id, message.guild.id)
+    }
+})
+
+client.on(Events.InteractionCreate, async interaction => {
+    if (!interaction.isModalSubmit()) return
+    await serverSettings.initServerData(interaction.guild.id)
+    const logsChannel = await serverSettings.getServerData(interaction.guild.id)
+    if (interaction.customId === 'modMail') {
+        try {
+
+            const header = interaction.fields.getTextInputValue('header')
+            const body = interaction.fields.getTextInputValue('body')
+            const date = Date.now()
+            const embed2 = new EmbedBuilder()
+                .setColor(0x588eb8)
+                .setTitle('New mod mail entry!')
+                .setDescription(`Please review it as fast as possible!`)
+                .addFields({ name: header, value: body })
+                .setFooter({ text: `${interaction.user.tag}'s Mod mail | Sent: ${date.toLocaleString()} ` })
+            const channel = client.channels.cache.get(logsChannel.logsChannelID)
+            await channel.send({ embeds: [embed2] })
+
+            const embed = new EmbedBuilder()
+                .setColor(0xebe707)
+                .setTitle('Your submission was received successfully!')
+                .setDescription(`It will be handeled shortly by one of our moderators!`)
+            await interaction.reply({ embeds: [embed], ephemeral: true })
+        } catch (e) {
+            console.log(e)
+            const embed = new EmbedBuilder()
+                .setColor(0xd10000)
+                .setTitle('Your submission cannot be sent!')
+                .setDescription(`Please ask a moderator to set the logs channel with the /setlogschannel command!`)
+            await interaction.reply({ embeds: [embed], ephemeral: true })
+        }
     }
 })
 
