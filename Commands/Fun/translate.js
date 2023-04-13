@@ -14,21 +14,27 @@ module.exports = {
         .setDescription('Translates user input!')
         .addStringOption(option =>
             option
-                .setName('input')
+                .setName('text')
                 .setDescription('The text you want to translate!')
                 .setRequired(true))
         .addStringOption(option =>
             option
                 .setName('translate_to')
                 .setDescription('The language you want your text to be translated! (in locales)')
-                .setRequired(true)),
+                .setRequired(true))
+        .addStringOption(option =>
+            option
+                .setName('translate_from')
+                .setDescription('The inputed language (default = english)')
+                .setRequired(false)),
 
     async execute(interaction) {
         let locale;
+        let from = interaction.options.getString('translate_from')
         let currentDate = Math.floor(Date.now() / 1000)
         const translation = await userData.getTranslation(interaction.user.id, interaction.guild.id)
         let tokens = translation.tokens
-        let input = interaction.options.getString('input')
+        let input = interaction.options.getString('text')
 
         if (currentDate - translation.lastUpdated >= 86400) {
             tokens = 100
@@ -37,12 +43,13 @@ module.exports = {
 
         try {
             locale = ISO6391.getCode(interaction.options.getString('translate_to'))
+            locale2 = ISO6391.getCode(from)
         } catch {
             return await interaction.reply({ content: 'Language was not found!', ephemeral: true })
         }
 
         if (input.length <= tokens) {
-            const text = await translate(input, locale);
+            const text = await translate(input, { from: locale2, to: locale });
             const embed = new EmbedBuilder()
                 .setColor(0x588eb8)
                 .setTitle(`Translated message to ${interaction.options.getString('translate_to')} `)
